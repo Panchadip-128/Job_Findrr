@@ -14,12 +14,23 @@ const app = express();
 
 // 🔍 Helpful log for debugging
 console.log("BASE_URL:", process.env.BASE_URL);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
+// Validate BASE_URL format
+const baseURL = process.env.BASE_URL || "http://localhost:5000";
+try {
+  new URL(baseURL);
+  console.log(" BASE_URL is valid:", baseURL);
+} catch (error) {
+  console.error(" Invalid BASE_URL:", baseURL, error.message);
+}
 
 const config = {
   authRequired: false,
   auth0Logout: true,
   secret: process.env.SECRET,
-  baseURL: process.env.BASE_URL || "http://localhost:5000", // fallback
+  baseURL: baseURL, // Use validated baseURL
   clientID: process.env.CLIENT_ID,
   issuerBaseURL: process.env.ISSUER_BASE_URL,
   routes: {
