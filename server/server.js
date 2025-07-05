@@ -18,7 +18,7 @@ console.log("CLIENT_URL:", process.env.CLIENT_URL);
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
 // Validate BASE_URL format
-const baseURL = process.env.BASE_URL || "http://localhost:5000";
+const baseURL = process.env.BASE_URL || "https://job-findrr.onrender.com";
 try {
   new URL(baseURL);
   console.log(" BASE_URL is valid:", baseURL);
