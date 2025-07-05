@@ -111,9 +111,7 @@ Auth: Auth0 (OIDC + secure cookies)
 
 Zero downtime during test deploys
 
- 
-- Made with 💻 by Panchadip Bhattacharjee
-Special thanks to mentors & collaborators for early feedback.
+
 
 ## License
 This project is open source and available under the MIT License.
