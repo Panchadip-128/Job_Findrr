@@ -10,6 +10,10 @@ import Profile from "./Profile";
 function Header() {
   const { isAuthenticated } = useGlobalContext();
   const pathname = usePathname();
+  
+  // Get API URL with fallback
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  
   return (
     <header className="px-10 py-6 bg-[#D7DEDC] text-gray-500 flex justify-between items-center">
       <Link href={"/"} className="flex items-center gap-2">
@@ -58,14 +62,14 @@ function Header() {
         ) : (
           <div className="flex items-center gap-6">
             <Link
-              href={`${process.env.NEXT_PUBLIC_API_URL}/login`}
+              href={`${apiUrl}/login`}
               className="py-2 px-6 rounded-md border flex items-center gap-4 bg-[#7263F3] text-white border-[#7263F3] hover:bg-[#7263F3]/90 trasition-all duration-200 ease-in-out"
             >
               <LogIn className="w-4 h-4" />
               Login
             </Link>
             <Link
-              href={`${process.env.NEXT_PUBLIC_API_URL}/login`}
+              href={`${apiUrl}/login`}
               className="py-2 px-6 rounded-md border flex items-center gap-4 border-[#7263F3] text-[#7263F3] hover:bg-[#7263F3]/10 trasition-all duration-200 ease-in-out"
             >
               <UserPlus className="w-4 h-4" />
