@@ -72,21 +72,39 @@ app.use(auth(config));
 
 // ⬇️ Ensure user is in DB
 const enusureUserInDB = asyncHandler(async (user) => {
-  const existingUser = await User.findOne({ auth0Id: user.sub });
-
-  if (!existingUser) {
-    const newUser = new User({
-      auth0Id: user.sub,
-      email: user.email,
-      name: user.name,
-      role: "jobseeker",
-      profilePicture: user.picture,
+  try {
+    // Check for existing user by both auth0Id and email
+    const existingUser = await User.findOne({ 
+      $or: [
+        { auth0Id: user.sub },
+        { email: user.email }
+      ]
     });
 
-    await newUser.save();
-    console.log("User added to DB", user);
-  } else {
-    console.log("User already exists in DB", existingUser.email);
+    if (!existingUser) {
+      const newUser = new User({
+        auth0Id: user.sub,
+        email: user.email,
+        name: user.name,
+        role: "jobseeker",
+        profilePicture: user.picture,
+      });
+
+      await newUser.save();
+      console.log("User added to DB", user.email);
+    } else {
+      // Update auth0Id if user exists but doesn't have it
+      if (!existingUser.auth0Id && user.sub) {
+        existingUser.auth0Id = user.sub;
+        await existingUser.save();
+        console.log("Updated existing user with auth0Id", user.email);
+      } else {
+        console.log("User already exists in DB", existingUser.email);
+      }
+    }
+  } catch (error) {
+    console.error("Error in ensureUserInDB:", error.message);
+    // Don't throw the error, just log it to prevent app crash
   }
 });
 
