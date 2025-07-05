@@ -6,7 +6,7 @@ A production-ready job search and posting platform built using **Next.js 14 (Typ
 
 ##  Live Demo
 
-- Frontend: [job-findrr.vercel.app](https://job-findrr.vercel.app)  
+- Frontend: [job-findrr.vercel.app](https://job-finder-deployed.vercel.app/)  
 - Backend: [jobfindrr-backend.onrender.com](https://jobfindrr-backend.onrender.com)
 
 ---
