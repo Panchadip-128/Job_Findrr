@@ -58,16 +58,12 @@ git clone https://github.com/Panchadip-128/Job_Findrr.git
 cd Job_Findrr 
 
  ▶ 2. Install frontend
-bash
-Copy
-Edit
+
 cd client
 npm install
 
 ▶ 3. Install backend
-bash
-Copy
-Edit
+
 cd ../server
 npm install
 
