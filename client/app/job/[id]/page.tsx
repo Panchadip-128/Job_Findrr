@@ -169,7 +169,7 @@ function page() {
           {/* SDE System Design Context */}
           <div className="mt-10 p-8 bg-gradient-to-br from-[#7263f3]/5 to-purple-500/5 rounded-2xl border border-[#7263f3]/10">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <span className="text-[#7263f3]">🏗️</span> System Architecture & Scale
+              System Architecture & Scale
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
@@ -200,7 +200,7 @@ function page() {
             
             <div className="mt-8">
               <h4 className="text-md font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span className="text-[#7263f3]">💡</span> SDE Interview Discussion Guide
+                SDE Interview Discussion Guide
               </h4>
               <div className="space-y-3">
                 <div className="p-4 bg-white rounded-lg border-l-4 border-[#7263f3] shadow-sm hover:translate-x-1 transition-transform">
@@ -224,7 +224,7 @@ function page() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div>
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  🏥 Siemens Healthineers Spec
+                  Siemens Healthineers Spec
                 </span>
                 <h3 className="text-xl font-bold text-gray-800 mt-2 flex items-center gap-2">
                   MedTech SDE & Data Science Interview Prep
@@ -232,10 +232,10 @@ function page() {
               </div>
               <div className="flex gap-2">
                 <span className="py-1 px-2.5 text-xs font-semibold rounded-md bg-emerald-500/10 text-emerald-700 border border-emerald-500/15">
-                  🔐 HIPAA Compliant
+                  HIPAA Compliant
                 </span>
                 <span className="py-1 px-2.5 text-xs font-semibold rounded-md bg-blue-500/10 text-blue-700 border border-blue-500/15">
-                  🔬 DICOM / HL7 / FHIR
+                  DICOM / HL7 / FHIR
                 </span>
               </div>
             </div>
@@ -252,16 +252,16 @@ function page() {
                   className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-emerald-600">🧠 Q1:</span>
+                    <span className="text-emerald-600">Q1:</span>
                     Design a scalable pipeline to segment 3D MRI scans (DICOM) in real-time.
                   </span>
                   <span className="text-xs font-extrabold text-[#7263f3]">
-                    {activeMedTechQ === 1 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                    {activeMedTechQ === 1 ? "Hide Answer" : "Reveal Answer"}
                   </span>
                 </button>
                 {activeMedTechQ === 1 && (
                   <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
-                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model Architecture Response:</div>
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Model Architecture Response:</div>
                     <p className="text-sm text-gray-700 leading-relaxed font-medium">
                       Stream massive 3D DICOM files asynchronously to an S3-compatible medical vault. Trigger containerized serverless GPU workers (e.g. AWS Lambda with custom container images or Kubernetes PODs running Triton Inference Server). Run a quantized 3D U-Net model with NVIDIA TensorRT to optimize medical imaging segmentations, guaranteeing latency below 200ms for active radiologist review sessions.
                     </p>
@@ -281,16 +281,16 @@ function page() {
                   className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-emerald-600">📡 Q2:</span>
+                    <span className="text-emerald-600">Q2:</span>
                     Design a real-time global telemetry pipeline for 10k Siemens Healthineers scanners.
                   </span>
                   <span className="text-xs font-extrabold text-[#7263f3]">
-                    {activeMedTechQ === 2 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                    {activeMedTechQ === 2 ? "Hide Answer" : "Reveal Answer"}
                   </span>
                 </button>
                 {activeMedTechQ === 2 && (
                   <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
-                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model IoT Architecture:</div>
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Model IoT Architecture:</div>
                     <p className="text-sm text-gray-700 leading-relaxed font-medium">
                       Deploy Apache Kafka or AWS Kinesis to ingest high-frequency IoT sensor telemetry (thermal, vacuum pressure, spin rates) globally. Validate schema headers against HL7/FHIR criteria. Direct real-time payloads to a time-series database (e.g. InfluxDB) for anomaly detection via isolation forests to schedule preventative scanner maintenance, archiving cold historical data in S3 Glacier.
                     </p>
@@ -310,16 +310,16 @@ function page() {
                   className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-emerald-600">🔐 Q3:</span>
+                    <span className="text-emerald-600">Q3:</span>
                     How do you train AI diagnostics models across hospitals without violating patient privacy?
                   </span>
                   <span className="text-xs font-extrabold text-[#7263f3]">
-                    {activeMedTechQ === 3 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                    {activeMedTechQ === 3 ? "Hide Answer" : "Reveal Answer"}
                   </span>
                 </button>
                 {activeMedTechQ === 3 && (
                   <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
-                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model Privacy Response:</div>
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Model Privacy Response:</div>
                     <p className="text-sm text-gray-700 leading-relaxed font-medium">
                       Implement **Federated Learning**. Rather than moving sensitive patient data to a central cloud, distribute model weights to hospital-local servers. Perform local training rounds on local datasets, then securely aggregate model weight gradients using Cryptographic Secure Multiparty Computation (SMPC) or Differential Privacy algorithms to update the centralized model weights securely.
                     </p>
@@ -406,7 +406,7 @@ function page() {
           {/* SDE Interactive Skills Matcher */}
           <div className="p-6 flex flex-col gap-3 bg-white rounded-md">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              🛠️ Tech Skills Matcher
+              Tech Skills Matcher
             </h3>
             <p className="text-xs text-gray-500">
               Interactive matching checklist. Click the skills you have:
@@ -425,7 +425,7 @@ function page() {
                         : "bg-indigo-500/10 text-[#7263f3] hover:bg-indigo-500/20"
                     }`}
                   >
-                    <span>{isChecked ? "✅" : "➕"}</span>
+                    <span>{isChecked ? "✓" : "+"}</span>
                     {skill}
                   </button>
                 );
@@ -449,8 +449,8 @@ function page() {
                 </div>
                 <p className="text-[10px] text-gray-400 mt-2 leading-tight">
                   {checkedSkills.length === job.skills.length 
-                    ? "🏆 Perfect Match! You have all SDE skills required for this job!" 
-                    : "💡 Tick off the skills you know to instantly see your compatibility score."}
+                    ? "Perfect Match! You have all SDE skills required for this job!" 
+                    : "Check the skills you know to instantly see your compatibility score."}
                 </p>
               </div>
             )}
@@ -459,7 +459,7 @@ function page() {
           {/* Interactive Compensation Breakdown */}
           <div className="p-6 flex flex-col gap-4 bg-white rounded-md">
             <h3 className="text-md font-semibold flex items-center gap-2">
-              💰 Est. Compensation Package
+              Est. Compensation Package
             </h3>
             <div className="flex flex-col gap-2 mt-1">
               <div className="flex justify-between items-center text-xs">
@@ -494,7 +494,7 @@ function page() {
           {/* SDE Interview Blueprint Stepper */}
           <div className="p-6 flex flex-col gap-3 bg-white rounded-md">
             <h3 className="text-md font-semibold flex items-center gap-2">
-              🧭 SDE Interview Blueprint
+              SDE Interview Blueprint
             </h3>
             <div className="flex flex-col gap-4 relative pl-3.5 border-l border-gray-200 ml-1.5 mt-2">
               <div className="relative">

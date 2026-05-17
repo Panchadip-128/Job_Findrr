@@ -149,7 +149,7 @@ function JobCard({ job, activeJob }: JobProps) {
         
         {/* Interview Format Badge */}
         <span className="py-1 px-2.5 text-xs font-medium rounded-md bg-purple-500/10 text-[#7263f3] border border-purple-500/20 flex items-center gap-1 select-none">
-          💻 {interviewFormat}
+          Format: {interviewFormat}
         </span>
       </div>
 
