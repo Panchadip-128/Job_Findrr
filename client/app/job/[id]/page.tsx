@@ -164,6 +164,59 @@ function page() {
             className="wysiwyg mt-2"
             dangerouslySetInnerHTML={{ __html: description }}
           ></div>
+
+          {/* SDE System Design Context */}
+          <div className="mt-10 p-8 bg-gradient-to-br from-[#7263f3]/5 to-purple-500/5 rounded-2xl border border-[#7263f3]/10">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-[#7263f3]">🏗️</span> System Architecture & Scale
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
+                <span className="text-2xl mb-2">⚡</span>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Peak QPS</span>
+                <span className="text-lg font-extrabold text-gray-800">
+                  {title.toLowerCase().includes("senior") || title.toLowerCase().includes("lead") ? "50k+" : "10k+"}
+                </span>
+              </div>
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
+                <span className="text-2xl mb-2">☁️</span>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Cloud</span>
+                <span className="text-lg font-extrabold text-gray-800">
+                  {title.toLowerCase().includes("azure") ? "Azure" : title.toLowerCase().includes("gcp") ? "GCP" : "AWS"}
+                </span>
+              </div>
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
+                <span className="text-2xl mb-2">🔄</span>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Pattern</span>
+                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight">Event<br/>Driven</span>
+              </div>
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
+                <span className="text-2xl mb-2">💾</span>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Data</span>
+                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight">NoSQL<br/>& Redis</span>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <h4 className="text-md font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="text-[#7263f3]">💡</span> SDE Interview Discussion Guide
+              </h4>
+              <div className="space-y-3">
+                <div className="p-4 bg-white rounded-lg border-l-4 border-[#7263f3] shadow-sm hover:translate-x-1 transition-transform">
+                  <p className="text-sm font-semibold text-gray-800">How would you handle a sudden 10x traffic spike?</p>
+                  <p className="text-xs text-gray-500 mt-1">Focus on caching strategies (Redis/Memcached), CDN usage, and auto-scaling group configurations.</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg border-l-4 border-emerald-500 shadow-sm hover:translate-x-1 transition-transform">
+                  <p className="text-sm font-semibold text-gray-800">Design a distributed rate limiter for our API.</p>
+                  <p className="text-xs text-gray-500 mt-1">Discuss Token Bucket vs Leaky Bucket algorithms, and how you would implement them using Redis sorted sets or Lua scripts.</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg border-l-4 border-purple-500 shadow-sm hover:translate-x-1 transition-transform">
+                  <p className="text-sm font-semibold text-gray-800">How do you ensure data consistency across microservices?</p>
+                  <p className="text-xs text-gray-500 mt-1">Expect questions on the Saga pattern, Outbox pattern, and two-phase commits vs eventual consistency.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="w-[26%] flex flex-col gap-8">
