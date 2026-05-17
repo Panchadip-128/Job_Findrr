@@ -25,6 +25,45 @@ function page() {
   const [isApplied, setIsApplied] = React.useState(false);
   const [checkedSkills, setCheckedSkills] = React.useState<string[]>([]);
   const [activeMedTechQ, setActiveMedTechQ] = React.useState<number | null>(null);
+  const [selectedModel, setSelectedModel] = React.useState<"mri" | "cardiac" | "xray">("mri");
+
+  const modelMetrics = {
+    mri: {
+      name: "3D Brain MRI Segmentation",
+      architecture: "3D U-Net (Quantized via TensorRT)",
+      metrics: [
+        { label: "Dice Coefficient (Overlap Accuracy)", value: 89, color: "bg-emerald-500" },
+        { label: "Clinical Sensitivity (Recall)", value: 94.2, color: "bg-blue-500" },
+        { label: "Clinical Specificity", value: 98.1, color: "bg-indigo-500" }
+      ],
+      cohort: "12,500+ Clinical Scans",
+      regulation: "FDA Class II Track"
+    },
+    cardiac: {
+      name: "Cardiac Telemetry Anomaly Detection",
+      architecture: "Temporal Convolutional Network + Isolation Forest",
+      metrics: [
+        { label: "ROC-AUC Score", value: 97.4, color: "bg-emerald-500" },
+        { label: "Clinical Sensitivity (Recall)", value: 96.8, color: "bg-blue-500" },
+        { label: "Clinical Specificity", value: 99.2, color: "bg-indigo-500" }
+      ],
+      cohort: "10,000+ IoT Live Streams",
+      regulation: "CE Mark Certified"
+    },
+    xray: {
+      name: "Chest X-Ray Pathology Detection",
+      architecture: "DenseNet-121 (Multi-label Classification)",
+      metrics: [
+        { label: "Mean Average Precision (mAP)", value: 91.5, color: "bg-emerald-500" },
+        { label: "Clinical Sensitivity (Recall)", value: 93.1, color: "bg-blue-500" },
+        { label: "Clinical Specificity", value: 97.4, color: "bg-indigo-500" }
+      ],
+      cohort: "150,000+ Validated Images",
+      regulation: "FDA Class II Approved"
+    }
+  };
+
+  const currentMetrics = modelMetrics[selectedModel];
 
   const toggleSkill = (skill: string) => {
     setCheckedSkills(prev => 
@@ -241,8 +280,83 @@ function page() {
             </div>
 
             <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-              Medical technology demands extreme safety, zero-latency sensor streaming, strict privacy regulations, and advanced machine learning for clinical decision support. Explore the interactive questions below to reveal domain-specific model answers:
+              Medical technology demands extreme safety, zero-latency sensor streaming, strict privacy regulations, and advanced machine learning for clinical decision support. Explore the metrics and interactive simulation answers below:
             </p>
+
+            {/* Interactive Model Performance Sandbox */}
+            <div className="mb-8 p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+              <h4 className="text-xs font-bold text-gray-600 mb-4 uppercase tracking-wider text-center">
+                Clinical ML Model Performance & Validation Dashboard
+              </h4>
+              
+              {/* Model selection toggles */}
+              <div className="flex flex-wrap gap-2 mb-6 justify-center">
+                <button
+                  onClick={() => setSelectedModel("mri")}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                    selectedModel === "mri"
+                      ? "bg-emerald-600 text-white shadow"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  Brain MRI (Segmentation)
+                </button>
+                <button
+                  onClick={() => setSelectedModel("cardiac")}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                    selectedModel === "cardiac"
+                      ? "bg-emerald-600 text-white shadow"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  Cardiac IoT (Telemetry)
+                </button>
+                <button
+                  onClick={() => setSelectedModel("xray")}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                    selectedModel === "xray"
+                      ? "bg-emerald-600 text-white shadow"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  Chest X-Ray (Pathology)
+                </button>
+              </div>
+
+              {/* Model Info */}
+              <div className="p-4 rounded-lg bg-gray-50/50 mb-5 md:flex justify-between items-center gap-4">
+                <div className="text-center md:text-left">
+                  <h5 className="text-sm font-bold text-gray-800">{currentMetrics.name}</h5>
+                  <p className="text-xs text-gray-500 mt-0.5">Architecture: <span className="font-semibold">{currentMetrics.architecture}</span></p>
+                </div>
+                <div className="mt-2.5 md:mt-0 flex gap-2 justify-center">
+                  <span className="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">
+                    {currentMetrics.cohort}
+                  </span>
+                  <span className="px-2.5 py-1 text-[10px] font-bold rounded bg-blue-100 text-blue-800">
+                    {currentMetrics.regulation}
+                  </span>
+                </div>
+              </div>
+
+              {/* Metrics visualizer */}
+              <div className="space-y-4">
+                {currentMetrics.metrics.map((metric, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between items-center text-xs mb-1.5">
+                      <span className="text-gray-600 font-medium">{metric.label}</span>
+                      <span className="font-extrabold text-gray-800">{metric.value}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`${metric.color} h-full rounded-full transition-all duration-500 ease-out`}
+                        style={{ width: `${metric.value}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <div className="flex flex-col gap-4">
               {/* Question 1 */}
