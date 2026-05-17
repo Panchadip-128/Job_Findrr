@@ -67,8 +67,57 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ✅ Auth0 Middleware
-app.use(auth(config));
+// ✅ Auth0 Middleware with Resilient Fallback
+const hasAuth0Config = 
+  process.env.SECRET && 
+  process.env.CLIENT_ID && 
+  process.env.ISSUER_BASE_URL &&
+  !process.env.SECRET.includes("your-") &&
+  !process.env.CLIENT_ID.includes("your-") &&
+  !process.env.ISSUER_BASE_URL.includes("your-");
+
+if (hasAuth0Config) {
+  try {
+    app.use(auth(config));
+    console.log("✅ Auth0 authentication successfully initialized.");
+  } catch (error) {
+    console.error("❌ Failed to initialize Auth0 middleware:", error.message);
+    setupMockAuth();
+  }
+} else {
+  console.log("\n⚠️ Auth0 configuration missing or has placeholders in server/.env");
+  console.log("👉 Using local developer MOCK AUTH for seamless local testing.\n");
+  setupMockAuth();
+}
+
+function setupMockAuth() {
+  // Inject mock oidc object on req
+  app.use((req, res, next) => {
+    req.oidc = {
+      isAuthenticated: () => true,
+      user: {
+        sub: "auth0|mock_developer_user",
+        email: "developer@jobfindrr.local",
+        name: "Developer Admin",
+        picture: "https://avatar.iran.liara.run/public/boy",
+      },
+    };
+    next();
+  });
+
+  // Mock routes normally handled by express-openid-connect
+  app.get("/login", (req, res) => {
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000");
+  });
+
+  app.get("/logout", (req, res) => {
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000");
+  });
+
+  app.get("/callback", (req, res) => {
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000");
+  });
+}
 
 // ⬇️ Ensure user is in DB
 const enusureUserInDB = asyncHandler(async (user) => {

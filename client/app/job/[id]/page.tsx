@@ -23,6 +23,13 @@ function page() {
 
   const [isLiked, setIsLiked] = React.useState(false);
   const [isApplied, setIsApplied] = React.useState(false);
+  const [checkedSkills, setCheckedSkills] = React.useState<string[]>([]);
+
+  const toggleSkill = (skill: string) => {
+    setCheckedSkills(prev => 
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
 
   const job = jobs.find((job: Job) => job._id === id);
   const otherJobs = jobs.filter((job: Job) => job._id !== id);
@@ -78,14 +85,8 @@ function page() {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-14 h-14 relative overflow-hidden rounded-md flex items-center justify-center bg-gray-200">
-                  <Image
-                    src={profilePicture || "/user.png"}
-                    alt={name || "User"}
-                    width={45}
-                    height={45}
-                    className="rounded-md"
-                  />
+                <div className="w-14 h-14 rounded-md flex items-center justify-center text-white font-extrabold text-2xl bg-gradient-to-tr from-[#7263f3] to-[#a294f9] shadow-sm select-none">
+                  {name ? name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2) : "U"}
                 </div>
 
                 <div>
@@ -98,9 +99,12 @@ function page() {
                   isLiked ? "text-[#7263f3]" : "text-gray-400"
                 }`}
                 onClick={() => {
-                  isAuthenticated
-                    ? handleLike(job._id)
-                    : router.push("https://job-findrr.onrender.com/login");
+                  if (isAuthenticated) {
+                    handleLike(job._id);
+                  } else {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+                    window.location.href = `${apiUrl}/login`;
+                  }
                 }}
               >
                 {isLiked ? bookmark : bookmarkEmpty}
@@ -176,7 +180,8 @@ function page() {
                   toast.error("You have already applied to this job");
                 }
               } else {
-                router.push("https://job-findrr.onrender.com/login");
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+                window.location.href = `${apiUrl}/login`;
               }
             }}
           >
@@ -229,22 +234,115 @@ function page() {
             </div>
           </div>
 
-          <div className="p-6 flex flex-col gap-2 bg-white rounded-md">
-            <h3 className="text-lg font-semibold">Skills</h3>
-            <p>
-              This is a full-time position. The successful candidate will be
-              responsible for the following:
+          {/* SDE Interactive Skills Matcher */}
+          <div className="p-6 flex flex-col gap-3 bg-white rounded-md">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              🛠️ Tech Skills Matcher
+            </h3>
+            <p className="text-xs text-gray-500">
+              Interactive matching checklist. Click the skills you have:
             </p>
 
-            <div className="flex flex-wrap gap-4">
-              {job.tags.map((tag: string, index: number) => (
-                <span
-                  key={index}
-                  className="px-4 py-1 rounded-full text-sm font-medium flex items-center bg-indigo-500/20 text-[#7263f3]"
-                >
-                  {tag}
-                </span>
-              ))}
+            <div className="flex flex-wrap gap-3 mt-1">
+              {job.skills && job.skills.map((skill: string, index: number) => {
+                const isChecked = checkedSkills.includes(skill);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => toggleSkill(skill)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 select-none ${
+                      isChecked
+                        ? "bg-gradient-to-r from-[#7263f3] to-[#a294f9] text-white shadow-md scale-105"
+                        : "bg-indigo-500/10 text-[#7263f3] hover:bg-indigo-500/20"
+                    }`}
+                  >
+                    <span>{isChecked ? "✅" : "➕"}</span>
+                    {skill}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Match score bar */}
+            {job.skills && job.skills.length > 0 && (
+              <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-r from-[#7263f3]/5 to-[#a294f9]/5 border border-[#7263f3]/10">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs font-extrabold text-[#7263f3]">Your Skill Fit</span>
+                  <span className="text-xs font-extrabold text-[#7263f3]">
+                    {Math.round((checkedSkills.length / job.skills.length) * 100)}% Match
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-[#7263f3] to-[#a294f9] h-full rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${Math.round((checkedSkills.length / job.skills.length) * 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-tight">
+                  {checkedSkills.length === job.skills.length 
+                    ? "🏆 Perfect Match! You have all SDE skills required for this job!" 
+                    : "💡 Tick off the skills you know to instantly see your compatibility score."}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Interactive Compensation Breakdown */}
+          <div className="p-6 flex flex-col gap-4 bg-white rounded-md">
+            <h3 className="text-md font-semibold flex items-center gap-2">
+              💰 Est. Compensation Package
+            </h3>
+            <div className="flex flex-col gap-2 mt-1">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Base Salary</span>
+                <span className="font-extrabold text-[#7263f3]">{formatMoney(salary, "GBP")}</span>
+              </div>
+              <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-[#7263f3] h-full" style={{ width: "70%" }}></div>
+              </div>
+              
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Annual RSU / Stock (Est.)</span>
+                <span className="font-extrabold text-purple-600">{formatMoney(salary * 0.35, "GBP")}</span>
+              </div>
+              <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-purple-500 h-full" style={{ width: "25%" }}></div>
+              </div>
+
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Sign-on Bonus (Est.)</span>
+                <span className="font-extrabold text-emerald-600">{formatMoney(salary * 0.1, "GBP")}</span>
+              </div>
+              <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-emerald-500 h-full" style={{ width: "10%" }}></div>
+              </div>
+            </div>
+            <p className="text-[9px] text-gray-400 leading-tight">
+              * Figures are based on typical compensation bands for this level of role.
+            </p>
+          </div>
+
+          {/* SDE Interview Blueprint Stepper */}
+          <div className="p-6 flex flex-col gap-3 bg-white rounded-md">
+            <h3 className="text-md font-semibold flex items-center gap-2">
+              🧭 SDE Interview Blueprint
+            </h3>
+            <div className="flex flex-col gap-4 relative pl-3.5 border-l border-gray-200 ml-1.5 mt-2">
+              <div className="relative">
+                <span className="absolute -left-[20px] top-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-2 ring-emerald-500/10"></span>
+                <h4 className="text-xs font-bold leading-none">Round 1: Technical Screen</h4>
+                <p className="text-[10px] text-gray-400 mt-1">45 mins • Coding & CS fundamentals.</p>
+              </div>
+              <div className="relative">
+                <span className="absolute -left-[20px] top-0 w-2.5 h-2.5 rounded-full bg-[#7263f3] border-2 border-white ring-2 ring-[#7263f3]/10"></span>
+                <h4 className="text-xs font-bold leading-none">Round 2: Systems Design</h4>
+                <p className="text-[10px] text-gray-400 mt-1">60 mins • Scalability & Architecture.</p>
+              </div>
+              <div className="relative">
+                <span className="absolute -left-[20px] top-0 w-2.5 h-2.5 rounded-full bg-purple-500 border-2 border-white ring-2 ring-purple-500/10"></span>
+                <h4 className="text-xs font-bold leading-none">Round 3: HM & Leadership</h4>
+                <p className="text-[10px] text-gray-400 mt-1">45 mins • Problem-solving & values.</p>
+              </div>
             </div>
           </div>
         </div>

@@ -21,7 +21,8 @@ function page() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push("https://job-findrr.onrender.com/login");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      window.location.href = `${apiUrl}/login`;
     }
   }, [isAuthenticated]);
 

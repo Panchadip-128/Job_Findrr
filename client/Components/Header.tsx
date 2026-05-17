@@ -12,7 +12,7 @@ function Header() {
   const pathname = usePathname();
   
   // Get API URL with fallback
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
   
   return (
     <header className="px-10 py-6 bg-[#D7DEDC] text-gray-500 flex justify-between items-center">

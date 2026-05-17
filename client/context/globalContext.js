@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 
 const GlobalContext = createContext();
 
-axios.defaults.baseURL = "https://job-findrr.onrender.com";
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
 axios.defaults.withCredentials = true;
 
 export const GlobalContextProvider = ({ children }) => {

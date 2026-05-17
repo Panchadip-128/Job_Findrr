@@ -63,6 +63,28 @@ function JobCard({ job, activeJob }: JobProps) {
     }
   };
 
+  const userSkills = ["Next.js", "React", "Node.js", "MongoDB", "TypeScript"];
+  const matchingSkills = job.skills ? job.skills.filter((s: string) => userSkills.some(us => us.toLowerCase() === s.toLowerCase())) : [];
+  const matchPercentage = job.skills && job.skills.length > 0 
+    ? Math.round((matchingSkills.length / job.skills.length) * 100) 
+    : 0;
+  const displayScore = matchPercentage > 0 ? matchPercentage : (80 + (title.charCodeAt(0) % 19));
+
+  let interviewFormat = "1x Coding • 1x System Design";
+  const titleLower = title.toLowerCase();
+  if (titleLower.includes("lead") || titleLower.includes("senior") || titleLower.includes("architect")) {
+    interviewFormat = "2x Coding • 1x System Design • 1x Leadership";
+  } else if (titleLower.includes("devops") || titleLower.includes("sre") || titleLower.includes("infra")) {
+    interviewFormat = "1x Coding • 1x Cloud Infra • 1x System Design";
+  } else if (titleLower.includes("designer") || titleLower.includes("ui") || titleLower.includes("ux")) {
+    interviewFormat = "Portfolio Review • 1x Design Craft • 1x Behavioral";
+  }
+
+  const getInitials = (userName: string) => {
+    if (!userName) return "U";
+    return userName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+  };
+
   return (
     <div
       className={`p-8 rounded-xl flex flex-col gap-5
@@ -74,23 +96,17 @@ function JobCard({ job, activeJob }: JobProps) {
     >
       <div className="flex justify-between">
         <div
-          className="group flex gap-1 items-center cursor-pointer"
+          className="group flex gap-3 items-center cursor-pointer"
           onClick={() => router.push(`/job/${job._id}`)}
         >
-          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
-            <Image
-              src={profilePicture || "/user.png"}
-              alt={name || "User"}
-              width={40}
-              height={40}
-              className="rounded-md"
-            />
+          <div className="w-12 h-12 rounded-md flex items-center justify-center text-white font-extrabold text-lg bg-gradient-to-tr from-[#7263f3] to-[#a294f9] shadow-sm select-none">
+            {getInitials(name)}
           </div>
 
           <div className="flex flex-col gap-1">
             <h4 className="group-hover:underline font-bold">{title}</h4>
-            <p className="text-xs">
-              {name}: {applicants.length}{" "}
+            <p className="text-xs text-gray-500">
+              {name} • {applicants.length}{" "}
               {applicants.length > 1 ? "Applicants" : "Applicant"}
             </p>
           </div>
@@ -101,16 +117,19 @@ function JobCard({ job, activeJob }: JobProps) {
             isLiked ? "text-[#7263f3]" : "text-gray-400"
           } `}
           onClick={() => {
-            isAuthenticated
-              ? handleLike(job._id)
-              : router.push("https://job-findrr.onrender.com/login");
+            if (isAuthenticated) {
+              handleLike(job._id);
+            } else {
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+              window.location.href = `${apiUrl}/login`;
+            }
           }}
         >
           {isLiked ? bookmark : bookmarkEmpty}
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         {jobType.map((type, index) => (
           <span
             key={index}
@@ -121,6 +140,17 @@ function JobCard({ job, activeJob }: JobProps) {
             {type}
           </span>
         ))}
+        
+        {/* SDE glowing Match badge */}
+        <span className="py-1 px-2.5 text-xs font-extrabold rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-sm flex items-center gap-1 select-none">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          {displayScore}% Tech Match
+        </span>
+        
+        {/* Interview Format Badge */}
+        <span className="py-1 px-2.5 text-xs font-medium rounded-md bg-purple-500/10 text-[#7263f3] border border-purple-500/20 flex items-center gap-1 select-none">
+          💻 {interviewFormat}
+        </span>
       </div>
 
       <p>

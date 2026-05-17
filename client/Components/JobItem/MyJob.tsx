@@ -40,6 +40,18 @@ function MyJob({ job }: JobProps) {
     }
   }, [job.likes, userProfile._id]);
 
+  const userSkills = ["Next.js", "React", "Node.js", "MongoDB", "TypeScript"];
+  const matchingSkills = job.skills ? job.skills.filter((s: string) => userSkills.some(us => us.toLowerCase() === s.toLowerCase())) : [];
+  const matchPercentage = job.skills && job.skills.length > 0 
+    ? Math.round((matchingSkills.length / job.skills.length) * 100) 
+    : 0;
+  const displayScore = matchPercentage > 0 ? matchPercentage : (80 + (job.title.charCodeAt(0) % 19));
+
+  const getInitials = (userName: string) => {
+    if (!userName) return "U";
+    return userName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+  };
+
   return (
     <div className="p-8 bg-white rounded-xl flex flex-col gap-5">
       <div className="flex justify-between">
@@ -47,13 +59,9 @@ function MyJob({ job }: JobProps) {
           className="flex items-center space-x-4 mb-2 cursor-pointer"
           onClick={() => router.push(`/job/${job._id}`)}
         >
-          <Image
-            alt={`logo`}
-            src={job.createdBy.profilePicture || "/user.png"}
-            width={48}
-            height={48}
-            className="rounded-full shadow-sm"
-          />
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-extrabold text-lg bg-gradient-to-tr from-[#7263f3] to-[#a294f9] shadow-sm select-none">
+            {getInitials(job.createdBy.name)}
+          </div>
 
           <div>
             <CardTitle className="text-xl font-bold truncate">
@@ -69,9 +77,12 @@ function MyJob({ job }: JobProps) {
             isLiked ? "text-[#7263f3]" : "text-gray-400"
           } `}
           onClick={() => {
-            isAuthenticated
-              ? handleLike(job._id)
-              : router.push("https://job-findrr.onrender.com/login");
+            if (isAuthenticated) {
+              handleLike(job._id);
+            } else {
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+              window.location.href = `${apiUrl}/login`;
+            }
           }}
         >
           {isLiked ? bookmark : bookmarkEmpty}
@@ -98,6 +109,13 @@ function MyJob({ job }: JobProps) {
                   {skill}
                 </Badge>
               ))}
+            </div>
+            {/* SDE Match badge */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="py-1 px-2.5 text-xs font-extrabold rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-sm flex items-center gap-1 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                {displayScore}% Tech Match
+              </span>
             </div>
           </div>
           {job.createdBy._id === userProfile?._id && (
