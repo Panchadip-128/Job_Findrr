@@ -24,6 +24,7 @@ function page() {
   const [isLiked, setIsLiked] = React.useState(false);
   const [isApplied, setIsApplied] = React.useState(false);
   const [checkedSkills, setCheckedSkills] = React.useState<string[]>([]);
+  const [activeMedTechQ, setActiveMedTechQ] = React.useState<number | null>(null);
 
   const toggleSkill = (skill: string) => {
     setCheckedSkills(prev => 
@@ -214,6 +215,121 @@ function page() {
                   <p className="text-sm font-semibold text-gray-800">How do you ensure data consistency across microservices?</p>
                   <p className="text-xs text-gray-500 mt-1">Expect questions on the Saga pattern, Outbox pattern, and two-phase commits vs eventual consistency.</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Siemens Healthineers MedTech SDE & AI/Data Science Spec */}
+          <div className="mt-8 p-8 bg-gradient-to-br from-emerald-50/50 to-blue-50/50 rounded-2xl border border-emerald-500/20 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  🏥 Siemens Healthineers Spec
+                </span>
+                <h3 className="text-xl font-bold text-gray-800 mt-2 flex items-center gap-2">
+                  MedTech SDE & Data Science Interview Prep
+                </h3>
+              </div>
+              <div className="flex gap-2">
+                <span className="py-1 px-2.5 text-xs font-semibold rounded-md bg-emerald-500/10 text-emerald-700 border border-emerald-500/15">
+                  🔐 HIPAA Compliant
+                </span>
+                <span className="py-1 px-2.5 text-xs font-semibold rounded-md bg-blue-500/10 text-blue-700 border border-blue-500/15">
+                  🔬 DICOM / HL7 / FHIR
+                </span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+              Medical technology demands extreme safety, zero-latency sensor streaming, strict privacy regulations, and advanced machine learning for clinical decision support. Explore the interactive questions below to reveal domain-specific model answers:
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {/* Question 1 */}
+              <div className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <button
+                  onClick={() => setActiveMedTechQ(activeMedTechQ === 1 ? null : 1)}
+                  className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-emerald-600">🧠 Q1:</span>
+                    Design a scalable pipeline to segment 3D MRI scans (DICOM) in real-time.
+                  </span>
+                  <span className="text-xs font-extrabold text-[#7263f3]">
+                    {activeMedTechQ === 1 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                  </span>
+                </button>
+                {activeMedTechQ === 1 && (
+                  <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model Architecture Response:</div>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                      Stream massive 3D DICOM files asynchronously to an S3-compatible medical vault. Trigger containerized serverless GPU workers (e.g. AWS Lambda with custom container images or Kubernetes PODs running Triton Inference Server). Run a quantized 3D U-Net model with NVIDIA TensorRT to optimize medical imaging segmentations, guaranteeing latency below 200ms for active radiologist review sessions.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">3D U-Net</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">Triton GPU</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">TensorRT</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Question 2 */}
+              <div className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <button
+                  onClick={() => setActiveMedTechQ(activeMedTechQ === 2 ? null : 2)}
+                  className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-emerald-600">📡 Q2:</span>
+                    Design a real-time global telemetry pipeline for 10k Siemens Healthineers scanners.
+                  </span>
+                  <span className="text-xs font-extrabold text-[#7263f3]">
+                    {activeMedTechQ === 2 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                  </span>
+                </button>
+                {activeMedTechQ === 2 && (
+                  <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model IoT Architecture:</div>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                      Deploy Apache Kafka or AWS Kinesis to ingest high-frequency IoT sensor telemetry (thermal, vacuum pressure, spin rates) globally. Validate schema headers against HL7/FHIR criteria. Direct real-time payloads to a time-series database (e.g. InfluxDB) for anomaly detection via isolation forests to schedule preventative scanner maintenance, archiving cold historical data in S3 Glacier.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">Kafka Ingest</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">FHIR Schemas</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">InfluxDB Anomaly</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Question 3 */}
+              <div className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <button
+                  onClick={() => setActiveMedTechQ(activeMedTechQ === 3 ? null : 3)}
+                  className="w-full text-left p-5 flex justify-between items-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-emerald-600">🔐 Q3:</span>
+                    How do you train AI diagnostics models across hospitals without violating patient privacy?
+                  </span>
+                  <span className="text-xs font-extrabold text-[#7263f3]">
+                    {activeMedTechQ === 3 ? "▲ Hide Answer" : "▼ Reveal Answer"}
+                  </span>
+                </button>
+                {activeMedTechQ === 3 && (
+                  <div className="p-5 border-t border-gray-100 bg-emerald-50/10">
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🎯 Model Privacy Response:</div>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                      Implement **Federated Learning**. Rather than moving sensitive patient data to a central cloud, distribute model weights to hospital-local servers. Perform local training rounds on local datasets, then securely aggregate model weight gradients using Cryptographic Secure Multiparty Computation (SMPC) or Differential Privacy algorithms to update the centralized model weights securely.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">Federated Learning</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">SMPC</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-gray-100 text-gray-600 uppercase">HIPAA Compliant</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
