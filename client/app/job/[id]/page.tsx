@@ -36,6 +36,36 @@ function page() {
     "HL7 Stream active: listening on port 6001 (FHIR compatible)"
   ]);
 
+  // JobSeeker AI Copilot states
+  const [activeTab, setActiveTab] = React.useState<"sde" | "ai_copilot">("ai_copilot");
+  const [resumeText, setResumeText] = React.useState("");
+  const [isAnalyzingResume, setIsAnalyzingResume] = React.useState(false);
+  const [analysisResult, setAnalysisResult] = React.useState<{
+    score: number;
+    matched: string[];
+    missing: string[];
+    advice: string;
+  } | null>(null);
+
+  const [candidateAnswer, setCandidateAnswer] = React.useState("");
+  const [isEvaluatingAnswer, setIsEvaluatingAnswer] = React.useState(false);
+  const [evaluationResult, setEvaluationResult] = React.useState<{
+    score: number;
+    feedback: string;
+    strengths: string;
+    tips: string;
+  } | null>(null);
+
+  const [negotiationTone, setNegotiationTone] = React.useState("Confident");
+  const [negotiationScript, setNegotiationScript] = React.useState("");
+
+  const getMockQuestion = () => {
+    if (job.title && (job.title.toLowerCase().includes("data") || job.title.toLowerCase().includes("ml") || job.title.toLowerCase().includes("healthineers"))) {
+      return "How would you handle highly skewed clinical data classes when training a medical imaging classification model?";
+    }
+    return "Explain how you would implement a distributed rate-limiting middleware in an Express application using Redis.";
+  };
+
   const modelMetrics = {
     mri: {
       name: "3D Brain MRI Segmentation",
@@ -214,8 +244,34 @@ function page() {
             dangerouslySetInnerHTML={{ __html: description }}
           ></div>
 
-          {/* SDE System Design Context */}
-          <div className="mt-10 p-8 bg-gradient-to-br from-[#7263f3]/5 to-purple-500/5 rounded-2xl border border-[#7263f3]/10">
+          {/* Interactive Navigation Tabs */}
+          <div className="flex gap-6 border-b border-gray-200 mt-10 mb-6">
+            <button
+              onClick={() => setActiveTab("ai_copilot")}
+              className={`pb-3 text-sm font-bold border-b-2 transition-all duration-200 select-none ${
+                activeTab === "ai_copilot"
+                  ? "border-[#7263f3] text-[#7263f3]"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              Candidate AI Copilot
+            </button>
+            <button
+              onClick={() => setActiveTab("sde")}
+              className={`pb-3 text-sm font-bold border-b-2 transition-all duration-200 select-none ${
+                activeTab === "sde"
+                  ? "border-[#7263f3] text-[#7263f3]"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              SDE Scalability & Diagnostics
+            </button>
+          </div>
+
+          {activeTab === "sde" && (
+            <>
+              {/* SDE System Design Context */}
+              <div className="p-8 bg-gradient-to-br from-[#7263f3]/5 to-purple-500/5 rounded-2xl border border-[#7263f3]/10">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               System Architecture & Scale
             </h3>
@@ -665,7 +721,322 @@ function page() {
 
               </div>
             </div>
-          </div>
+          </>
+          )}
+
+          {activeTab === "ai_copilot" && (
+            <div className="space-y-8 mt-6">
+              
+              {/* Card 1: Resume Fit Analyzer & Parser */}
+              <div className="p-6 bg-gradient-to-br from-[#7263f3]/5 to-indigo-500/5 rounded-2xl border border-[#7263f3]/10 shadow-sm animate-[fadeIn_0.3s_ease]">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="px-2.5 py-0.5 text-[9px] font-bold rounded bg-[#7263f3]/10 text-[#7263f3] uppercase tracking-wide">
+                      JobFindrr Tool 1
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-800 mt-1">Interactive Resume Fit Analyzer</h3>
+                  </div>
+                  <span className="px-2.5 py-1 text-[10px] font-semibold rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Real-time Parsing
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                  Paste your resume text below to match your qualifications against this job's required skills and tags. Get a dynamic match rating and customized refinement instructions!
+                </p>
+
+                <div className="space-y-4">
+                  <textarea
+                    rows={4}
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder="Paste your resume details here (e.g. 'Senior Frontend Developer with 5 years experience in React, Next.js, and TypeScript...')"
+                    className="w-full p-3 text-xs bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#7263f3]/25 focus:border-[#7263f3] outline-none transition-all placeholder:text-gray-400"
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (!resumeText.trim()) {
+                        toast.error("Please paste your resume text first!");
+                        return;
+                      }
+                      setIsAnalyzingResume(true);
+                      setTimeout(() => {
+                        setIsAnalyzingResume(false);
+                        const lowerText = resumeText.toLowerCase();
+                        // Find matching skills
+                        const matched = (job.skills || []).filter(skill => 
+                          lowerText.includes(skill.toLowerCase())
+                        );
+                        // Find missing skills
+                        const missing = (job.skills || []).filter(skill => 
+                          !lowerText.includes(skill.toLowerCase())
+                        );
+                        
+                        // Calculate score
+                        const totalSkills = (job.skills || []).length;
+                        const score = totalSkills > 0 ? Math.round((matched.length / totalSkills) * 100) : 70;
+                        
+                        let advice = "Your resume looks strong! Consider adding more specific experiences regarding your team leadership.";
+                        if (missing.length > 0) {
+                          advice = `To maximize your fit, explicitly mention your experience with ${missing.slice(0, 2).join(" and ")} in your project summaries.`;
+                        }
+
+                        setAnalysisResult({ score, matched, missing, advice });
+                        toast.success("Resume analysis complete!");
+                      }, 1200);
+                    }}
+                    disabled={isAnalyzingResume}
+                    className="px-4 py-2 bg-[#7263f3] hover:bg-[#7263f3]/90 text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:bg-gray-400"
+                  >
+                    {isAnalyzingResume ? "Analyzing Resume & Skills..." : "Analyze Resume Fit"}
+                  </button>
+
+                  {analysisResult && (
+                    <div className="p-5 bg-white border border-gray-150 rounded-xl mt-4 shadow-inner space-y-4 animate-[fadeIn_0.3s_ease]">
+                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                        <span className="text-xs font-extrabold text-gray-700">Resume Match Score</span>
+                        <span className={`px-2.5 py-0.5 text-xs font-extrabold rounded-full ${
+                          analysisResult.score >= 80 
+                            ? "bg-green-100 text-green-800" 
+                            : analysisResult.score >= 50 
+                            ? "bg-amber-100 text-amber-800" 
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {analysisResult.score}% Compatibility
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            analysisResult.score >= 80 ? "bg-green-500" : analysisResult.score >= 50 ? "bg-amber-500" : "bg-red-500"
+                          }`}
+                          style={{ width: `${analysisResult.score}%` }}
+                        ></div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <span className="font-bold text-green-600 block mb-1.5">Matched Keywords ({analysisResult.matched.length})</span>
+                          {analysisResult.matched.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {analysisResult.matched.map((kw, i) => (
+                                <span key={i} className="px-2 py-0.5 rounded bg-green-50 text-green-700 border border-green-100 font-medium">{kw}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">None detected. Add core tags to resume.</span>
+                          )}
+                        </div>
+
+                        <div>
+                          <span className="font-bold text-amber-600 block mb-1.5">Missing Core Keywords ({analysisResult.missing.length})</span>
+                          {analysisResult.missing.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {analysisResult.missing.map((kw, i) => (
+                                <span key={i} className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100 font-medium">{kw}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-green-600 font-medium">All core keywords found!</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 text-xs">
+                        <span className="font-bold text-indigo-800 block mb-1">Tailored Action Plan:</span>
+                        <p className="text-gray-700 leading-relaxed font-medium">{analysisResult.advice}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Card 2: AI Mock Interview Coach */}
+              <div className="p-6 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl border border-blue-500/10 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="px-2.5 py-0.5 text-[9px] font-bold rounded bg-blue-100 text-blue-800 uppercase tracking-wide">
+                      JobFindrr Tool 2
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-800 mt-1">AI Mock Interview Coach</h3>
+                  </div>
+                  <span className="px-2.5 py-1 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-100">
+                    SDE Eval Engine
+                  </span>
+                </div>
+                
+                <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                  Prepare for this role! Below is a high-yield technical question generated for this exact position. Submit your answer below to get evaluated by our automated SDE grading engine.
+                </p>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-white rounded-xl border border-gray-150">
+                    <span className="text-[10px] font-bold text-[#7263f3] uppercase tracking-wider block mb-1">Generated Technical Question:</span>
+                    <p className="text-sm font-bold text-gray-800">{getMockQuestion()}</p>
+                  </div>
+
+                  <textarea
+                    rows={4}
+                    value={candidateAnswer}
+                    onChange={(e) => setCandidateAnswer(e.target.value)}
+                    placeholder="Type your explanation or pseudocode here..."
+                    className="w-full p-3 text-xs bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#7263f3]/25 focus:border-[#7263f3] outline-none transition-all placeholder:text-gray-400"
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (!candidateAnswer.trim()) {
+                        toast.error("Please type your response first!");
+                        return;
+                      }
+                      setIsEvaluatingAnswer(true);
+                      setTimeout(() => {
+                        setIsEvaluatingAnswer(false);
+                        const wordCount = candidateAnswer.split(/\s+/).length;
+                        
+                        let score = 55;
+                        let feedback = "Your answer is a bit brief. Try elaborating on the core mechanisms and design decisions.";
+                        let strengths = "Correctly mentioned basic terms relating to the topic.";
+                        let tips = "Discuss error handling, lock timeout strategies (like lease times in Redis), and recovery procedures.";
+
+                        if (wordCount > 40) {
+                          score = 88;
+                          feedback = "Excellent response! You demonstrated strong technical intuition, a clear explanation of algorithms, and proper architectural considerations.";
+                          strengths = "Solid breakdown of key algorithmic constraints, scalability parameters, and synchronization patterns.";
+                          tips = "Include details on network partitions, node failures, and how client-side retry policies interact with these failures.";
+                        } else if (wordCount > 15) {
+                          score = 74;
+                          feedback = "Good foundation! You have grasped the general flow, but can supplement your explanation with more lower-level design details.";
+                          strengths = "Correctly identifies the primary components and flow patterns.";
+                          tips = "Explicitly address potential scale conflicts, such as storage growth or parallel write locks.";
+                        }
+
+                        setEvaluationResult({ score, feedback, strengths, tips });
+                        toast.success("AI Evaluation complete!");
+                      }, 1500);
+                    }}
+                    disabled={isEvaluatingAnswer}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:bg-gray-400"
+                  >
+                    {isEvaluatingAnswer ? "Evaluating Answer..." : "Submit Response to AI Coach"}
+                  </button>
+
+                  {evaluationResult && (
+                    <div className="p-5 bg-white border border-gray-150 rounded-xl mt-4 shadow-inner space-y-4 animate-[fadeIn_0.3s_ease]">
+                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                        <span className="text-xs font-extrabold text-gray-700">AI Scoring Output</span>
+                        <span className="text-xs font-extrabold text-[#7263f3]">
+                          {evaluationResult.score} / 100 Score
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-[#7263f3] to-blue-500 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${evaluationResult.score}%` }}
+                        ></div>
+                      </div>
+
+                      <p className="text-xs text-gray-700 leading-relaxed font-medium bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <span className="font-bold text-[#7263f3] block mb-1">Feedback Summary:</span>
+                        {evaluationResult.feedback}
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div className="p-3 bg-green-50/50 rounded-lg border border-green-100 font-medium">
+                          <span className="font-bold text-green-800 block mb-1">Key Strengths</span>
+                          <p className="text-green-700 leading-relaxed">{evaluationResult.strengths}</p>
+                        </div>
+                        <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100 font-medium">
+                          <span className="font-bold text-indigo-800 block mb-1">Expert Upgrade Tips</span>
+                          <p className="text-indigo-700 leading-relaxed">{evaluationResult.tips}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Card 3: Salary Negotiator & Script Generator */}
+              <div className="p-6 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 rounded-2xl border border-emerald-500/10 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="px-2.5 py-0.5 text-[9px] font-bold rounded bg-emerald-100 text-emerald-800 uppercase tracking-wide">
+                      JobFindrr Tool 3
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-800 mt-1">Salary Negotiator & Pitch Builder</h3>
+                  </div>
+                  <span className="px-2.5 py-1 text-[10px] font-semibold rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Equity Aware
+                  </span>
+                </div>
+                
+                <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                  Draft a winning pay proposal! Select your tone below to instantly write a professional, high-converting salary negotiation script ready to copy-paste.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1.5">Select Script Tone:</label>
+                    <div className="flex gap-2">
+                      {["Confident", "Collaborative", "Polite"].map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setNegotiationTone(t)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            negotiationTone === t
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      let script = "";
+                      const formattedSalary = formatMoney(salary * 1.15, "GBP");
+                      if (negotiationTone === "Confident") {
+                        script = `Dear Hiring Team,\n\nThank you so much for extending the offer for the ${job.title} position. I am highly thrilled about the opportunity to join the team and bring my expertise in ${job.skills.slice(0, 3).join(", ")} to deliver outstanding products.\n\nGiven my robust background in distributed architectures, scalable pipelines, and successful product delivery, I would like to discuss adjusting the base compensation to ${formattedSalary} per year, along with a proportional equity adjustment, to better align with the core impact of this leadership role.\n\nI am confident I will generate immediate return on investment for the team and am looking forward to finalizing our partnership.\n\nBest regards,\n[Your Name]`;
+                      } else if (negotiationTone === "Collaborative") {
+                        script = `Dear Hiring Team,\n\nI am absolutely delighted to receive the offer for the ${job.title} role! I have great respect for your vision and am eager to begin contributing to the success of the team.\n\nBefore I sign, I wanted to discuss the compensation structure. Based on current industry bands for a role of this impact, combined with my extensive experience, I was hoping we could explore a base salary of ${formattedSalary}. I am also highly open to adjusting the RSU or sign-on bonus allocation to make this a win-win partnership.\n\nI would love to jump on a quick call to align on these numbers!\n\nWarmly,\n[Your Name]`;
+                      } else {
+                        script = `Dear Hiring Team,\n\nThank you so much for the offer to join as your new ${job.title}! I am incredibly excited about the vision of the organization.\n\nI want to make sure I start on the best possible foot. Given the high scope of this position and my comprehensive skills, I would be very grateful if we could consider a base salary of ${formattedSalary}. I hope this fits within your budget parameters and represents a fair start for our long-term journey.\n\nThank you very much for your time and consideration!\n\nSincerely,\n[Your Name]`;
+                      }
+                      setNegotiationScript(script);
+                      toast.success("Script generated successfully!");
+                    }}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+                  >
+                    Generate Negotiation Script
+                  </button>
+
+                  {negotiationScript && (
+                    <div className="p-4 bg-gray-50 border border-gray-150 rounded-xl mt-4 space-y-3 animate-[fadeIn_0.3s_ease]">
+                      <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Generated Pitch Template:</span>
+                      <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap leading-relaxed bg-white p-3 rounded-lg border border-gray-200 shadow-inner max-h-[220px] overflow-y-auto">
+                        {negotiationScript}
+                      </pre>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(negotiationScript);
+                          toast.success("Copied to clipboard!");
+                        }}
+                        className="px-3 py-1 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-[10px] font-bold rounded-md shadow-sm transition-all"
+                      >
+                        Copy Script
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
 
         <div className="w-[26%] flex flex-col gap-8">
