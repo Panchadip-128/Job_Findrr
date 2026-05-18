@@ -1,11 +1,89 @@
 import asyncHandler from "express-async-handler";
+import mongoose from "mongoose";
 import User from "../models/UserModel.js";
 import Job from "../models/JobModel.js";
 
+// Global mock in-memory database to serve as a high-fidelity fallback if MongoDB is offline
+let mockJobs = [
+  {
+    _id: "60d5f5f5f5f5f5f5f5f5f5f1",
+    title: "Lead Software Engineer (Next.js & Node)",
+    location: "San Francisco, CA (Remote)",
+    salary: 145000,
+    salaryType: "Year",
+    negotiable: true,
+    jobType: ["Full-Time"],
+    description: "<p>We are looking for a senior full-stack engineer to lead our Next.js and Node.js products. You will work on building scalable real-time systems and beautiful customer interfaces.</p>",
+    tags: ["Fullstack", "Next.js", "Node.js"],
+    skills: ["Next.js", "React", "Node.js", "MongoDB", "TypeScript"],
+    likes: [],
+    createdBy: {
+      _id: "60d000000000000000000001",
+      name: "Developer Admin",
+      profilePicture: "https://avatar.iran.liara.run/public/boy"
+    },
+    applicants: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: "60d5f5f5f5f5f5f5f5f5f5f2",
+    title: "Senior UI/UX Designer",
+    location: "New York, NY (Hybrid)",
+    salary: 120000,
+    salaryType: "Year",
+    negotiable: false,
+    jobType: ["Full-Time", "Contract"],
+    description: "<p>Join our design team to craft sleek interfaces, glassmorphism aesthetics, dynamic interactions, and high-converting portals for our user base.</p>",
+    tags: ["Design", "UI/UX", "Figma"],
+    skills: ["Figma", "UI/UX", "TailwindCSS", "Aesthetics"],
+    likes: [],
+    createdBy: {
+      _id: "60d000000000000000000001",
+      name: "Developer Admin",
+      profilePicture: "https://avatar.iran.liara.run/public/boy"
+    },
+    applicants: [],
+    createdAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    _id: "60d5f5f5f5f5f5f5f5f5f5f3",
+    title: "DevOps Engineer (Kubernetes & AWS)",
+    location: "Austin, TX (Remote)",
+    salary: 135000,
+    salaryType: "Year",
+    negotiable: true,
+    jobType: ["Full-Time"],
+    description: "<p>Manage our cloud infrastructure. Automate deployment pipelines, scale Kubernetes clusters, and optimize server latency.</p>",
+    tags: ["DevOps", "AWS", "Kubernetes"],
+    skills: ["Kubernetes", "Docker", "AWS", "CI/CD", "Terraform"],
+    likes: [],
+    createdBy: {
+      _id: "60d000000000000000000001",
+      name: "Developer Admin",
+      profilePicture: "https://avatar.iran.liara.run/public/boy"
+    },
+    applicants: [],
+    createdAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
+
 export const createJob = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findOne({ auth0Id: req.oidc.user.sub });
-    const isAuth = req.oidc.isAuthenticated() || user.email;
+    const isDbConnected = mongoose.connection.readyState === 1;
+    let user = null;
+
+    if (isDbConnected) {
+      user = await User.findOne({ auth0Id: req.oidc.user.sub });
+    } else {
+      user = {
+        _id: "60d000000000000000000001",
+        name: req.oidc?.user?.name || "Developer Admin",
+        profilePicture: req.oidc?.user?.picture || "https://avatar.iran.liara.run/public/boy",
+        email: req.oidc?.user?.email || "developer@jobfindrr.local"
+      };
+    }
+
+    const isAuth = req.oidc.isAuthenticated() || (user && user.email);
 
     if (!isAuth) {
       return res.status(401).json({ message: "Not Authorized" });
@@ -23,35 +101,16 @@ export const createJob = asyncHandler(async (req, res) => {
       negotiable,
     } = req.body;
 
-    if (!title) {
-      return res.status(400).json({ message: "Title is required" });
-    }
+    if (!title) return res.status(400).json({ message: "Title is required" });
+    if (!description) return res.status(400).json({ message: "Description is required" });
+    if (!location) return res.status(400).json({ message: "Location is required" });
+    if (!salary) return res.status(400).json({ message: "Salary is required" });
+    if (!jobType) return res.status(400).json({ message: "Job Type is required" });
+    if (!tags) return res.status(400).json({ message: "Tags are required" });
+    if (!skills) return res.status(400).json({ message: "Skills are required" });
 
-    if (!description) {
-      return res.status(400).json({ message: "Description is required" });
-    }
-
-    if (!location) {
-      return res.status(400).json({ message: "Location is required" });
-    }
-
-    if (!salary) {
-      return res.status(400).json({ message: "Salary is required" });
-    }
-
-    if (!jobType) {
-      return res.status(400).json({ message: "Job Type is required" });
-    }
-
-    if (!tags) {
-      return res.status(400).json({ message: "Tags are required" });
-    }
-
-    if (!skills) {
-      return res.status(400).json({ message: "Skills are required" });
-    }
-
-    const job = new Job({
+    const newJobData = {
+      _id: isDbConnected ? undefined : `mock_job_${Date.now()}`,
       title,
       description,
       location,
@@ -61,12 +120,25 @@ export const createJob = asyncHandler(async (req, res) => {
       skills,
       salaryType,
       negotiable,
-      createdBy: user._id,
-    });
+      createdBy: user,
+      likes: [],
+      applicants: [],
+      createdAt: new Date().toISOString()
+    };
 
-    await job.save();
-
-    return res.status(201).json(job);
+    if (isDbConnected) {
+      const job = new Job({
+        ...newJobData,
+        createdBy: user._id,
+      });
+      await job.save();
+      const populatedJob = await Job.findById(job._id).populate("createdBy", "name profilePicture");
+      return res.status(201).json(populatedJob);
+    } else {
+      mockJobs.unshift(newJobData);
+      console.log("Mock job created in memory successfully:", newJobData.title);
+      return res.status(201).json(newJobData);
+    }
   } catch (error) {
     console.log("Error in createJob: ", error);
     return res.status(500).json({
@@ -78,76 +150,18 @@ export const createJob = asyncHandler(async (req, res) => {
 // get jobs
 export const getJobs = asyncHandler(async (req, res) => {
   try {
-    const jobs = await Job.find({})
-      .populate("createdBy", "name profilePicture")
-      .sort({ createdAt: -1 }); // sort by latest job
-
-    return res.status(200).json(jobs);
+    const isDbConnected = mongoose.connection.readyState === 1;
+    if (isDbConnected) {
+      const jobs = await Job.find({})
+        .populate("createdBy", "name profilePicture")
+        .sort({ createdAt: -1 }); // sort by latest job
+      return res.status(200).json(jobs);
+    } else {
+      return res.status(200).json(mockJobs);
+    }
   } catch (error) {
     console.warn("⚠️ Database is offline. Falling back to mock/seed job listings.");
-    // Return gorgeous seed jobs so the app functions beautifully without MongoDB
-    return res.status(200).json([
-      {
-        _id: "60d5f5f5f5f5f5f5f5f5f5f1",
-        title: "Lead Software Engineer (Next.js & Node)",
-        location: "San Francisco, CA (Remote)",
-        salary: 145000,
-        salaryType: "Year",
-        negotiable: true,
-        jobType: ["Full-Time"],
-        description: "<p>We are looking for a senior full-stack engineer to lead our Next.js and Node.js products. You will work on building scalable real-time systems and beautiful customer interfaces.</p>",
-        tags: ["Fullstack", "Next.js", "Node.js"],
-        skills: ["Next.js", "React", "Node.js", "MongoDB", "TypeScript"],
-        likes: [],
-        createdBy: {
-          _id: "60d000000000000000000001",
-          name: "Developer Admin",
-          profilePicture: "https://avatar.iran.liara.run/public/boy"
-        },
-        applicants: [],
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: "60d5f5f5f5f5f5f5f5f5f5f2",
-        title: "Senior UI/UX Designer",
-        location: "New York, NY (Hybrid)",
-        salary: 120000,
-        salaryType: "Year",
-        negotiable: false,
-        jobType: ["Full-Time", "Contract"],
-        description: "<p>Join our design team to craft sleek interfaces, glassmorphism aesthetics, dynamic interactions, and high-converting portals for our user base.</p>",
-        tags: ["Design", "UI/UX", "Figma"],
-        skills: ["Figma", "UI/UX", "TailwindCSS", "Aesthetics"],
-        likes: [],
-        createdBy: {
-          _id: "60d000000000000000000001",
-          name: "Developer Admin",
-          profilePicture: "https://avatar.iran.liara.run/public/boy"
-        },
-        applicants: [],
-        createdAt: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        _id: "60d5f5f5f5f5f5f5f5f5f5f3",
-        title: "DevOps Engineer (Kubernetes & AWS)",
-        location: "Austin, TX (Remote)",
-        salary: 135000,
-        salaryType: "Year",
-        negotiable: true,
-        jobType: ["Full-Time"],
-        description: "<p>Manage our cloud infrastructure. Automate deployment pipelines, scale Kubernetes clusters, and optimize server latency.</p>",
-        tags: ["DevOps", "AWS", "Kubernetes"],
-        skills: ["Kubernetes", "Docker", "AWS", "CI/CD", "Terraform"],
-        likes: [],
-        createdBy: {
-          _id: "60d000000000000000000001",
-          name: "Developer Admin",
-          profilePicture: "https://avatar.iran.liara.run/public/boy"
-        },
-        applicants: [],
-        createdAt: new Date(Date.now() - 172800000).toISOString()
-      }
-    ]);
+    return res.status(200).json(mockJobs);
   }
 });
 
@@ -276,19 +290,30 @@ export const likeJob = asyncHandler(async (req, res) => {
 export const getJobById = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    const job = await Job.findById(id).populate(
-      "createdBy",
-      "name profilePicture"
-    );
+    if (isDbConnected) {
+      const job = await Job.findById(id).populate(
+        "createdBy",
+        "name profilePicture"
+      );
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      return res.status(200).json(job);
+    } else {
+      const job = mockJobs.find((j) => j._id === id);
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      return res.status(200).json(job);
     }
-
-    return res.status(200).json(job);
   } catch (error) {
     console.log("Error in getJobById: ", error);
+    const job = mockJobs.find((j) => j._id === req.params.id);
+    if (job) return res.status(200).json(job);
     return res.status(500).json({
       message: "Server Error",
     });
