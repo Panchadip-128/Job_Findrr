@@ -7,7 +7,7 @@ import { useJobsContext } from "@/context/jobsContext";
 import { Job } from "@/types/types";
 import formatMoney from "@/utils/formatMoney";
 import { formatDates } from "@/utils/fotmatDates";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Zap, Cloud, RefreshCw, Database } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -26,6 +26,15 @@ function page() {
   const [checkedSkills, setCheckedSkills] = React.useState<string[]>([]);
   const [activeMedTechQ, setActiveMedTechQ] = React.useState<number | null>(null);
   const [selectedModel, setSelectedModel] = React.useState<"mri" | "cardiac" | "xray">("mri");
+
+  // Diagnostics Simulation Sandbox states for Siemens Healthineers interview
+  const [sliceNumber, setSliceNumber] = React.useState(12);
+  const [segmentationConfidence, setSegmentationConfidence] = React.useState(75);
+  const [ecgAnomaly, setEcgAnomaly] = React.useState(false);
+  const [telemetryLogs, setTelemetryLogs] = React.useState<string[]>([
+    "Scanner telemetry connection established (Client Version v3.1.2)",
+    "HL7 Stream active: listening on port 6001 (FHIR compatible)"
+  ]);
 
   const modelMetrics = {
     mri: {
@@ -212,28 +221,28 @@ function page() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
-                <span className="text-2xl mb-2">⚡</span>
+                <Zap className="w-6 h-6 text-[#7263f3] mb-2" />
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Peak QPS</span>
-                <span className="text-lg font-extrabold text-gray-800">
+                <span className="text-lg font-extrabold text-gray-800 mt-1">
                   {title.toLowerCase().includes("senior") || title.toLowerCase().includes("lead") ? "50k+" : "10k+"}
                 </span>
               </div>
               <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
-                <span className="text-2xl mb-2">☁️</span>
+                <Cloud className="w-6 h-6 text-blue-500 mb-2" />
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Cloud</span>
-                <span className="text-lg font-extrabold text-gray-800">
+                <span className="text-lg font-extrabold text-gray-800 mt-1">
                   {title.toLowerCase().includes("azure") ? "Azure" : title.toLowerCase().includes("gcp") ? "GCP" : "AWS"}
                 </span>
               </div>
               <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
-                <span className="text-2xl mb-2">🔄</span>
+                <RefreshCw className="w-6 h-6 text-emerald-500 mb-2" />
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Pattern</span>
-                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight">Event<br/>Driven</span>
+                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight mt-1">Event<br/>Driven</span>
               </div>
               <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
-                <span className="text-2xl mb-2">💾</span>
+                <Database className="w-6 h-6 text-indigo-500 mb-2" />
                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Data</span>
-                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight">NoSQL<br/>& Redis</span>
+                <span className="text-lg font-extrabold text-gray-800 text-center leading-tight mt-1">NoSQL<br/>& Redis</span>
               </div>
             </div>
             
@@ -444,6 +453,216 @@ function page() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Siemens Healthineers Interactive Diagnostics Sandbox */}
+            <div className="mt-8 pt-8 border-t border-emerald-500/10">
+              <h4 className="text-sm font-extrabold text-gray-800 mb-2 uppercase tracking-wider text-center">
+                Clinical Diagnostics Simulation Sandbox
+              </h4>
+              <p className="text-xs text-gray-500 text-center mb-6 leading-relaxed">
+                Demonstrate safety-critical pipeline designs with live mock diagnostic feeds and streaming scanner telemetry.
+              </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                {/* Module 1: MRI DICOM Slice Segmenter */}
+                <div className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <span className="px-2.5 py-1 text-[9px] font-bold rounded-md bg-emerald-100 text-emerald-800 uppercase tracking-wide">
+                      Module 1: MRI DICOM Slice Viewer
+                    </span>
+                    <h5 className="text-sm font-bold text-gray-800 mt-2 mb-3">3D U-Net Segmentation Sandbox</h5>
+                    
+                    {/* Simulated Brain DICOM Viewer */}
+                    <div className="relative w-full aspect-video bg-gray-950 rounded-lg flex items-center justify-center overflow-hidden border border-gray-800 shadow-inner">
+                      <div className="absolute inset-0 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                      
+                      {/* Stylized Dynamic Skull & Brain slice */}
+                      <svg className="w-36 h-36 text-gray-700/80" viewBox="0 0 200 200">
+                        {/* Out Skull */}
+                        <ellipse cx="100" cy="100" rx={65 + Math.sin(sliceNumber / 3) * 3} ry={80 + Math.cos(sliceNumber / 3) * 3} fill="none" stroke="#4b5563" strokeWidth="1.5" strokeDasharray="3 3" />
+                        {/* Brain Hemispheres */}
+                        <path d="M 100,25 C 45,25 40,175 100,175" fill="#1e293b" stroke="#374151" strokeWidth="1.5" />
+                        <path d="M 100,25 C 155,25 160,175 100,175" fill="#1e293b" stroke="#374151" strokeWidth="1.5" />
+                        {/* Ventricles */}
+                        <ellipse cx="100" cy="95" rx={5 + (sliceNumber % 3)} fill="#0f172a" />
+                        
+                        {/* Active ML U-Net Segmentation tumor highlight */}
+                        {sliceNumber >= 6 && sliceNumber <= 18 && (
+                          <ellipse
+                            cx={85 + Math.sin(sliceNumber / 2) * 6}
+                            cy={80 + Math.cos(sliceNumber / 3) * 4}
+                            rx={12 + (sliceNumber % 3) * 1.5}
+                            ry={10 + (sliceNumber % 2) * 1.2}
+                            fill="rgba(16, 185, 129, 0.25)"
+                            stroke="#10b981"
+                            strokeWidth="2"
+                            style={{
+                              opacity: segmentationConfidence / 100,
+                              filter: "drop-shadow(0 0 5px rgba(16, 185, 129, 0.5))"
+                            }}
+                          />
+                        )}
+                      </svg>
+                      
+                      {/* Grid Labels */}
+                      <span className="absolute top-2.5 left-3 text-[9px] font-mono text-emerald-400">
+                        DICOM: SLICE_{sliceNumber.toString().padStart(3, "0")} / 024
+                      </span>
+                      <span className="absolute bottom-2.5 right-3 text-[8px] font-mono text-gray-500">
+                        Inference: Quantized U-Net
+                      </span>
+                      
+                      {sliceNumber >= 6 && sliceNumber <= 18 ? (
+                        <span className="absolute top-2.5 right-3 px-2 py-0.5 text-[9px] font-extrabold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono animate-pulse">
+                          Tumor: {(85 + (sliceNumber % 3) + (segmentationConfidence % 4)).toFixed(1)}% Match
+                        </span>
+                      ) : (
+                        <span className="absolute top-2.5 right-3 px-2 py-0.5 text-[9px] font-bold rounded bg-gray-800 text-gray-400 font-mono">
+                          Nominal Tissue
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Range Controls */}
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <div className="flex justify-between items-center text-[11px] text-gray-600 mb-1">
+                        <span className="font-semibold">DICOM Slice Scrubber</span>
+                        <span className="font-mono text-gray-800 font-bold">Slice {sliceNumber} / 24</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="24"
+                        value={sliceNumber}
+                        onChange={(e) => setSliceNumber(parseInt(e.target.value))}
+                        className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center text-[11px] text-gray-600 mb-1">
+                        <span className="font-semibold">Segmentation Confidence</span>
+                        <span className="font-mono text-gray-800 font-bold">{segmentationConfidence}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="20"
+                        max="100"
+                        value={segmentationConfidence}
+                        onChange={(e) => setSegmentationConfidence(parseInt(e.target.value))}
+                        className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Module 2: ECG Live IoT Telemetry */}
+                <div className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <span className="px-2.5 py-1 text-[9px] font-bold rounded-md bg-blue-100 text-blue-800 uppercase tracking-wide">
+                      Module 2: Cardiac Telemetry
+                    </span>
+                    <h5 className="text-sm font-bold text-gray-800 mt-2 mb-3">Live Streaming Telemetry Monitor</h5>
+                    
+                    {/* Simulated ECG grid waveform */}
+                    <div className="relative w-full aspect-video bg-gray-950 rounded-lg flex items-center justify-center overflow-hidden border border-gray-800 shadow-inner">
+                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] [background-size:20px_20px] opacity-40"></div>
+                      
+                      {/* Heartbeat pulse path */}
+                      <svg className="w-full h-full text-blue-500" viewBox="0 0 300 150">
+                        {ecgAnomaly ? (
+                          // PVC Anomaly Wave
+                          <path
+                            d="M 0,75 L 30,75 L 45,75 L 50,55 L 55,95 L 60,75 L 90,75 L 105,75 L 115,20 L 125,130 L 135,75 L 150,75 L 175,75 L 180,-10 L 195,160 L 210,75 L 230,75 L 260,75 L 275,75 L 280,60 L 285,90 L 290,75 L 300,75"
+                            fill="none"
+                            stroke="#ef4444"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                              filter: "drop-shadow(0 0 5px rgba(239, 68, 68, 0.8))"
+                            }}
+                          />
+                        ) : (
+                          // Normal Heartbeat Wave
+                          <path
+                            d="M 0,75 L 30,75 L 45,75 L 50,65 L 55,85 L 60,75 L 95,75 L 110,75 L 115,30 L 122,120 L 130,75 L 165,75 L 180,75 L 185,65 L 190,85 L 195,75 L 230,75 L 245,75 L 250,30 L 257,120 L 265,75 L 300,75"
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                              filter: "drop-shadow(0 0 5px rgba(59, 130, 246, 0.6))"
+                            }}
+                          />
+                        )}
+                      </svg>
+                      
+                      {/* Overlay labels */}
+                      <span className="absolute top-2.5 left-3 text-[9px] font-mono text-blue-400">
+                        Node: SCANNER_T_2041
+                      </span>
+                      <span className="absolute bottom-2.5 left-3 text-[8px] font-mono text-gray-500">
+                        HL7 FHIR Stream (250Hz JSON)
+                      </span>
+                      
+                      {ecgAnomaly ? (
+                        <div className="absolute top-2.5 right-3 flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-extrabold rounded bg-red-500/20 text-red-400 border border-red-500/30 font-mono animate-pulse">
+                          Outlier Triggered (PVC)
+                        </div>
+                      ) : (
+                        <div className="absolute top-2.5 right-3 flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-mono">
+                          ECG Signal Nominal
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Telemetry controls and event logger */}
+                  <div className="mt-4 space-y-3">
+                    <button
+                      onClick={() => {
+                        const newAnomalyState = !ecgAnomaly;
+                        setEcgAnomaly(newAnomalyState);
+                        const timestamp = new Date().toLocaleTimeString();
+                        if (newAnomalyState) {
+                          setTelemetryLogs(prev => [
+                            `[${timestamp}] ! Outlier arrhythmia flagged by TCN anomaly model (98.4% confidence)`,
+                            ...prev.slice(0, 3)
+                          ]);
+                        } else {
+                          setTelemetryLogs(prev => [
+                            `[${timestamp}] Nominal signal restored. Running isolation forest monitoring.`,
+                            ...prev.slice(0, 3)
+                          ]);
+                        }
+                      }}
+                      className={`w-full py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                        ecgAnomaly
+                          ? "bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                          : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                      }`}
+                    >
+                      {ecgAnomaly ? "Clear Telemetry Anomaly" : "Inject Telemetry Anomaly"}
+                    </button>
+
+                    {/* Console Event Logger */}
+                    <div className="bg-gray-900 rounded-lg p-2.5 border border-gray-800 font-mono text-[9px] text-gray-300 min-h-[50px] max-h-[50px] overflow-y-auto shadow-inner">
+                      {telemetryLogs.map((log, index) => (
+                        <div key={index} className={`truncate ${log.includes("!") ? "text-red-400 font-bold" : "text-emerald-400"}`}>
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
