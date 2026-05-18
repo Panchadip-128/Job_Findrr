@@ -67,6 +67,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Health check for hosting providers
+app.get("/health", (req, res) => {
+  return res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 // ✅ Auth0 Middleware with Resilient Fallback
 const hasAuth0Config = 
   process.env.SECRET && 
@@ -189,3 +194,13 @@ const server = async () => {
 };
 
 server();
+
+// Graceful shutdown and unhandled rejection handling
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("SIGTERM", () => {
+  console.info("SIGTERM received. Shutting down gracefully.");
+  process.exit(0);
+});

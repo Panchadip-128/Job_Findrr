@@ -65,9 +65,9 @@ function JobForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createJob({
+    const success = await createJob({
       title: jobTitle,
       description: jobDescription,
       salaryType,
@@ -81,7 +81,9 @@ function JobForm() {
       tags,
     });
 
-    resetJobForm();
+    if (success) {
+      resetJobForm();
+    }
   };
 
   return (

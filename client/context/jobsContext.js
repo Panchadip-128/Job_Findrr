@@ -67,8 +67,11 @@ export const JobsContextProvider = ({ children }) => {
       await getJobs();
       // redirect to the job details page
       router.push(`/job/${res.data._id}`);
+      return true;
     } catch (error) {
       console.log("Error creating job", error);
+      toast.error(error.response?.data?.message || "Failed to create job");
+      return false;
     }
   };
 

@@ -67,13 +67,40 @@ let mockJobs = [
   }
 ];
 
+// Helper to get or dynamically create user in DB if missing
+const getOrCreateUser = async (oidcUser) => {
+  if (!oidcUser) return null;
+  let user = await User.findOne({ 
+    $or: [
+      { auth0Id: oidcUser.sub },
+      { email: oidcUser.email }
+    ]
+  });
+
+  if (!user) {
+    user = new User({
+      auth0Id: oidcUser.sub,
+      email: oidcUser.email,
+      name: oidcUser.name || "Developer Admin",
+      role: "jobseeker",
+      profilePicture: oidcUser.picture || "https://avatar.iran.liara.run/public/boy",
+    });
+    await user.save();
+    console.log("User dynamically created in DB:", user.email);
+  } else if (!user.auth0Id && oidcUser.sub) {
+    user.auth0Id = oidcUser.sub;
+    await user.save();
+  }
+  return user;
+};
+
 export const createJob = asyncHandler(async (req, res) => {
   try {
     const isDbConnected = mongoose.connection.readyState === 1;
     let user = null;
 
     if (isDbConnected) {
-      user = await User.findOne({ auth0Id: req.oidc.user.sub });
+      user = await getOrCreateUser(req.oidc?.user);
     } else {
       user = {
         _id: "60d000000000000000000001",
@@ -83,9 +110,9 @@ export const createJob = asyncHandler(async (req, res) => {
       };
     }
 
-    const isAuth = req.oidc.isAuthenticated() || (user && user.email);
+    const isAuth = req.oidc?.isAuthenticated?.() || (user && user.email);
 
-    if (!isAuth) {
+    if (!isAuth || !user) {
       return res.status(401).json({ message: "Not Authorized" });
     }
 
@@ -105,9 +132,9 @@ export const createJob = asyncHandler(async (req, res) => {
     if (!description) return res.status(400).json({ message: "Description is required" });
     if (!location) return res.status(400).json({ message: "Location is required" });
     if (!salary) return res.status(400).json({ message: "Salary is required" });
-    if (!jobType) return res.status(400).json({ message: "Job Type is required" });
-    if (!tags) return res.status(400).json({ message: "Tags are required" });
-    if (!skills) return res.status(400).json({ message: "Skills are required" });
+    if (!jobType || (Array.isArray(jobType) && jobType.length === 0)) return res.status(400).json({ message: "Job Type is required" });
+    if (!tags || (Array.isArray(tags) && tags.length === 0)) return res.status(400).json({ message: "Tags are required" });
+    if (!skills || (Array.isArray(skills) && skills.length === 0)) return res.status(400).json({ message: "Skills are required" });
 
     const newJobData = {
       _id: isDbConnected ? undefined : `mock_job_${Date.now()}`,
@@ -168,17 +195,26 @@ export const getJobs = asyncHandler(async (req, res) => {
 // get jobs by user
 export const getJobsByUser = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (isDbConnected) {
+      const user = await User.findById(req.params.id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const jobs = await Job.find({ createdBy: user._id })
+        .populate("createdBy", "name profilePicture")
+        .sort({ createdAt: -1 });
+
+      return res.status(200).json(jobs);
+    } else {
+      const userJobs = mockJobs.filter(
+        (job) => job.createdBy?._id === req.params.id
+      );
+      return res.status(200).json(userJobs);
     }
-
-    const jobs = await Job.find({ createdBy: user._id })
-      .populate("createdBy", "name profilePicture")
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json(jobs);
   } catch (error) {
     console.log("Error in getJobsByUser: ", error);
     return res.status(500).json({
@@ -191,27 +227,59 @@ export const getJobsByUser = asyncHandler(async (req, res) => {
 export const searchJobs = asyncHandler(async (req, res) => {
   try {
     const { tags, location, title } = req.query;
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    let query = {};
+    if (isDbConnected) {
+      let query = {};
 
-    if (tags) {
-      query.tags = { $in: tags.split(",") };
+      if (tags) {
+        query.tags = { $in: tags.split(",") };
+      }
+
+      if (location) {
+        query.location = { $regex: location, $options: "i" };
+      }
+
+      if (title) {
+        query.title = { $regex: title, $options: "i" };
+      }
+
+      const jobs = await Job.find(query).populate(
+        "createdBy",
+        "name profilePicture"
+      );
+
+      return res.status(200).json(jobs);
+    } else {
+      let filteredJobs = [...mockJobs];
+      
+      if (tags) {
+        const tagList = tags.split(",").map((t) => t.trim().toLowerCase());
+        filteredJobs = filteredJobs.filter(
+          (job) =>
+            job.tags &&
+            job.tags.some((tag) => tagList.includes(tag.toLowerCase()))
+        );
+      }
+
+      if (location) {
+        const locQuery = location.toLowerCase();
+        filteredJobs = filteredJobs.filter(
+          (job) =>
+            job.location && job.location.toLowerCase().includes(locQuery)
+        );
+      }
+
+      if (title) {
+        const titleQuery = title.toLowerCase();
+        filteredJobs = filteredJobs.filter(
+          (job) => job.title && job.title.toLowerCase().includes(titleQuery)
+        );
+      }
+
+      console.log(`Mock search executed. Found ${filteredJobs.length} jobs.`);
+      return res.status(200).json(filteredJobs);
     }
-
-    if (location) {
-      query.location = { $regex: location, $options: "i" };
-    }
-
-    if (title) {
-      query.title = { $regex: title, $options: "i" };
-    }
-
-    const jobs = await Job.find(query).populate(
-      "createdBy",
-      "name profilePicture"
-    );
-
-    return res.status(200).json(jobs);
   } catch (error) {
     console.log("Error in searchJobs: ", error);
     return res.status(500).json({
@@ -223,27 +291,45 @@ export const searchJobs = asyncHandler(async (req, res) => {
 // apply for job
 export const applyJob = asyncHandler(async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    if (isDbConnected) {
+      const job = await Job.findById(req.params.id);
+
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      const user = await getOrCreateUser(req.oidc?.user);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (job.applicants.includes(user._id)) {
+        return res.status(400).json({ message: "Already applied for this job" });
+      }
+
+      job.applicants.push(user._id);
+
+      await job.save();
+
+      return res.status(200).json(job);
+    } else {
+      const job = mockJobs.find((j) => j._id === req.params.id);
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      const userId = "60d000000000000000000001";
+      if (job.applicants.includes(userId)) {
+        return res.status(400).json({ message: "Already applied for this job" });
+      }
+
+      job.applicants.push(userId);
+      console.log(`Mock user applied to mock job: ${job.title}`);
+      return res.status(200).json(job);
     }
-
-    const user = await User.findOne({ auth0Id: req.oidc.user.sub });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (job.applicants.includes(user._id)) {
-      return res.status(400).json({ message: "Already applied for this job" });
-    }
-
-    job.applicants.push(user._id);
-
-    await job.save();
-
-    return res.status(200).json(job);
   } catch (error) {
     console.log("Error in applyJob: ", error);
     return res.status(500).json({
@@ -255,29 +341,48 @@ export const applyJob = asyncHandler(async (req, res) => {
 // liek and unlike job
 export const likeJob = asyncHandler(async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
+    if (isDbConnected) {
+      const job = await Job.findById(req.params.id);
 
-    const user = await User.findOne({ auth0Id: req.oidc.user.sub });
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+      const user = await getOrCreateUser(req.oidc?.user);
 
-    const isLiked = job.likes.includes(user._id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
-    if (isLiked) {
-      job.likes = job.likes.filter((like) => !like.equals(user._id));
+      const isLiked = job.likes.includes(user._id);
+
+      if (isLiked) {
+        job.likes = job.likes.filter((like) => !like.equals(user._id));
+      } else {
+        job.likes.push(user._id);
+      }
+
+      await job.save();
+
+      return res.status(200).json(job);
     } else {
-      job.likes.push(user._id);
+      const job = mockJobs.find((j) => j._id === req.params.id);
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      const userId = "60d000000000000000000001";
+      const isLiked = job.likes.includes(userId);
+      if (isLiked) {
+        job.likes = job.likes.filter((like) => like !== userId);
+      } else {
+        job.likes.push(userId);
+      }
+      console.log(`Mock user liked/unliked mock job: ${job.title}`);
+      return res.status(200).json(job);
     }
-
-    await job.save();
-
-    return res.status(200).json(job);
   } catch (error) {
     console.log("Error in likeJob: ", error);
     return res.status(500).json({
@@ -324,23 +429,34 @@ export const getJobById = asyncHandler(async (req, res) => {
 export const deleteJob = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
+    const isDbConnected = mongoose.connection.readyState === 1;
 
-    const job = await Job.findById(id);
-    const user = await User.findOne({ auth0Id: req.oidc.user.sub });
+    if (isDbConnected) {
+      const job = await Job.findById(id);
+      const user = await getOrCreateUser(req.oidc?.user);
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      await job.deleteOne({
+        _id: id,
+      });
+
+      return res.status(200).json({ message: "Job deleted successfully" });
+    } else {
+      const jobIndex = mockJobs.findIndex((j) => j._id === id);
+      if (jobIndex === -1) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      mockJobs.splice(jobIndex, 1);
+      console.log(`Mock job deleted in-memory: ${id}`);
+      return res.status(200).json({ message: "Job deleted successfully in-memory" });
     }
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    await job.deleteOne({
-      _id: id,
-    });
-
-    return res.status(200).json({ message: "Job deleted successfully" });
   } catch (error) {
     console.log("Error in deleteJob: ", error);
     return res.status(500).json({
