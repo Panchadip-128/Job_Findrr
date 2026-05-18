@@ -59,12 +59,7 @@ function page() {
   const [negotiationTone, setNegotiationTone] = React.useState("Confident");
   const [negotiationScript, setNegotiationScript] = React.useState("");
 
-  const getMockQuestion = () => {
-    if (job.title && (job.title.toLowerCase().includes("data") || job.title.toLowerCase().includes("ml") || job.title.toLowerCase().includes("healthineers"))) {
-      return "How would you handle highly skewed clinical data classes when training a medical imaging classification model?";
-    }
-    return "Explain how you would implement a distributed rate-limiting middleware in an Express application using Redis.";
-  };
+
 
   const modelMetrics = {
     mri: {
@@ -112,6 +107,13 @@ function page() {
 
   const job = jobs.find((job: Job) => job._id === id);
   const otherJobs = jobs.filter((job: Job) => job._id !== id);
+
+  const getMockQuestion = () => {
+    if (job && job.title && (job.title.toLowerCase().includes("data") || job.title.toLowerCase().includes("ml") || job.title.toLowerCase().includes("healthineers"))) {
+      return "How would you handle highly skewed clinical data classes when training a medical imaging classification model?";
+    }
+    return "Explain how you would implement a distributed rate-limiting middleware in an Express application using Redis.";
+  };
 
   useEffect(() => {
     if (job) {
@@ -721,8 +723,9 @@ function page() {
 
               </div>
             </div>
-          </>
-          )}
+          </div>
+        </>
+      )}
 
           {activeTab === "ai_copilot" && (
             <div className="space-y-8 mt-6">
@@ -764,11 +767,11 @@ function page() {
                         setIsAnalyzingResume(false);
                         const lowerText = resumeText.toLowerCase();
                         // Find matching skills
-                        const matched = (job.skills || []).filter(skill => 
+                        const matched = (job.skills || []).filter((skill: string) => 
                           lowerText.includes(skill.toLowerCase())
                         );
                         // Find missing skills
-                        const missing = (job.skills || []).filter(skill => 
+                        const missing = (job.skills || []).filter((skill: string) => 
                           !lowerText.includes(skill.toLowerCase())
                         );
                         
