@@ -1,34 +1,34 @@
-# 🚀 Job-Findrr – Full-Stack Job Portal
+# Job-Findrr – Full-Stack Job Portal
 
 A production-ready job search and posting platform engineered with **Next.js 14**, **Node.js/Express**, and **MongoDB**. Designed with a modular, decoupled architecture to ensure high performance, secure authentication via **Auth0**, and independent scalability.
 
 ---
 
-## 🌐 Live Demo
+## Live Demo
 
 - **Frontend:** [job-findrr.vercel.app](https://job-finder-deployed.vercel.app/)
 - **Backend API:** [jobfindrr-backend.onrender.com](https://jobfindrr-backend.onrender.com)
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The application utilizes a **Decoupled Client-Server Architecture** to separate presentation logic from core business logic, enabling independent scaling and deployment.
 
 ```mermaid
 graph TD
-    Client[Next.js 14 Client App]
-    Backend[Node.js / Express Backend]
-    Auth[Auth0 Identity Provider]
-    DB[(MongoDB Atlas)]
+    Client["Next.js 14 Client App"]
+    Backend["Node.js / Express Backend"]
+    Auth["Auth0 Identity Provider"]
+    DB[("MongoDB Atlas")]
 
-    Client <-->|REST API / JSON| Backend
-    Client <-->|OIDC Login| Auth
-    Backend <-->|Verify JWT Tokens| Auth
-    Backend <-->|Mongoose / CRUD| DB
+    Client -->|"REST API / JSON"| Backend
+    Client -->|"OIDC Login"| Auth
+    Backend -->|"Verify JWT Tokens"| Auth
+    Backend -->|"Mongoose / CRUD"| DB
 ```
 
-### 🧠 Core Engineering Decisions & Tradeoffs
+### Core Engineering Decisions & Tradeoffs
 
 During development, I made several architectural decisions based on scalability, developer velocity, and performance:
 
@@ -46,7 +46,7 @@ During development, I made several architectural decisions based on scalability,
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 | Domain | Technologies |
 | :--- | :--- |
@@ -58,7 +58,7 @@ During development, I made several architectural decisions based on scalability,
 
 ---
 
-## ✨ Core Features
+## Core Features
 
 - **Advanced Job Search & Filtering:** Filter by title, required skills, and location.
 - **Dynamic Job Posting Form:** Custom form supporting dynamic skill tags and rich descriptions.
@@ -68,7 +68,7 @@ During development, I made several architectural decisions based on scalability,
 
 ---
 
-## 🚀 Performance & Scalability Highlights
+## Performance & Scalability Highlights
 
 - **Cold Start Time:** `< 2s` (Optimized Next.js builds on Vercel)
 - **API Response Time:** `~250–300ms p95 latency` for core database queries.
@@ -77,7 +77,7 @@ During development, I made several architectural decisions based on scalability,
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```text
 panchadip-128-job_findrr/
@@ -96,7 +96,7 @@ panchadip-128-job_findrr/
 
 ---
 
-## 🛠️ Local Setup & Installation
+## Local Setup & Installation
 
 **1. Clone the repository**
 ```bash
@@ -141,5 +141,5 @@ npm run dev
 
 ---
 
-## 📄 License
+## License
 This project is open source and available under the [MIT License](LICENSE).
